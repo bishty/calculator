@@ -1,52 +1,78 @@
-function clock(){
-    //calculate angle
-    var d, h, m, s;
-    d = new Date;
-    
-    h = 30 * ((d.getHours() % 12) + d.getMinutes() / 60);
-    m = 6 * d.getMinutes();
-    s = 6 * d.getSeconds();
-    
-    //move hands
-    setAttr('h-hand', h);
-    setAttr('m-hand', m);
-    setAttr('s-hand', s);
-    setAttr('s-tail', s+180);
-    
-    //display time
-    h = d.getHours();
-    m = d.getMinutes();
-    s = d.getSeconds();
-    
-    if(h >= 12){
-        setText('suffix', 'PM');
-    }else{
-        setText('suffix', 'AM');
-    }
-    
-    if(h != 12){
-        h %= 12;
-    }
-    
-    setText('sec', s);
-    setText('min', m);
-    setText('hr', h);
-    
-    //call every second
-    setTimeout(clock, 1000);
-    
-};
-
-function setAttr(id,val){
-    var v = 'rotate(' + val + ', 70, 70)';
-    document.getElementById(id).setAttribute('transform', v);
-};
-
-function setText(id,val){
-    if(val < 10){
-        val = '0' + val;
-    }
-    document.getElementById(id).innerHTML = val;
-};
-
-window.onload=clock;
+function getHistory(){
+	return document.getElementById("history-value").innerText;
+}
+function printHistory(num){
+	document.getElementById("history-value").innerText=num;
+}
+function getOutput(){
+	return document.getElementById("output-value").innerText;
+}
+function printOutput(num){
+	if(num==""){
+		document.getElementById("output-value").innerText=num;
+	}
+	else{
+		document.getElementById("output-value").innerText=getFormattedNumber(num);
+	}	
+}
+function getFormattedNumber(num){
+	if(num=="-"){
+		return "";
+	}
+	var n = Number(num);
+	var value = n.toLocaleString("en");
+	return value;
+}
+function reverseNumberFormat(num){
+	return Number(num.replace(/,/g,''));
+}
+var operator = document.getElementsByClassName("operator");
+for(var i =0;i<operator.length;i++){
+	operator[i].addEventListener('click',function(){
+		if(this.id=="clear"){
+			printHistory("");
+			printOutput("");
+		}
+		else if(this.id=="backspace"){
+			var output=reverseNumberFormat(getOutput()).toString();
+			if(output){//if output has a value
+				output= output.substr(0,output.length-1);
+				printOutput(output);
+			}
+		}
+		else{
+			var output=getOutput();
+			var history=getHistory();
+			if(output==""&&history!=""){
+				if(isNaN(history[history.length-1])){
+					history= history.substr(0,history.length-1);
+				}
+			}
+			if(output!="" || history!=""){
+				output= output==""?output:reverseNumberFormat(output);
+				history=history+output;
+				if(this.id=="="){
+					var result=eval(history);
+					printOutput(result);
+					printHistory("");
+				}
+				else{
+					history=history+this.id;
+					printHistory(history);
+					printOutput("");
+				}
+			}
+		}
+		
+	});
+}
+var number = document.getElementsByClassName("number");
+for(var i =0;i<number.length;i++){
+	number[i].addEventListener('click',function(){
+		var output=reverseNumberFormat(getOutput());
+		if(output!=NaN){ //if output is a number
+			output=output+this.id;
+			printOutput(output);
+		}
+	});
+}
